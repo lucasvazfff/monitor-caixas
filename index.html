@@ -1,0 +1,376 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>Monitor de Caixas</title>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  :root {
+    --bg:       #f0f2f5;
+    --card:     #ffffff;
+    --border:   rgba(0,0,0,0.08);
+    --text:     #1a1a2e;
+    --muted:    #6b7280;
+    --green:    #3B6D11;
+    --green-bg: #eaf3de;
+    --green-bd: #97C459;
+    --red:      #A32D2D;
+    --red-bg:   #fcebeb;
+    --red-bd:   #F09595;
+    --amber:    #854F0B;
+    --amber-bg: #faeeda;
+    --amber-bd: #EF9F27;
+    --blue:     #185FA5;
+    --blue-bg:  #e6f1fb;
+    --blue-bd:  #85B7EB;
+    --radius:   14px;
+    --radius-sm:8px;
+  }
+
+  body {
+    font-family: 'Segoe UI', Roboto, sans-serif;
+    background: var(--bg);
+    min-height: 100vh;
+    padding: 14px;
+    color: var(--text);
+  }
+
+  .wrap { max-width: 440px; margin: auto; display: flex; flex-direction: column; gap: 12px; }
+
+  .card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 16px;
+  }
+
+  .label {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .7px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  /* ── BOMBA ── */
+  .bomba-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
+  .bomba-val { font-size: 20px; font-weight: 600; }
+  .badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
+  .badge {
+    font-size: 10px; font-weight: 600; padding: 2px 8px;
+    border-radius: 20px; border: 0.5px solid transparent;
+  }
+  .badge-on     { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
+  .badge-off    { background: var(--red-bg);   color: var(--red);   border-color: var(--red-bd); }
+  .badge-auto   { background: var(--blue-bg);  color: var(--blue);  border-color: var(--blue-bd); }
+  .badge-manual { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
+
+  .refresh-btn {
+    width: 36px; height: 36px; border-radius: 50%;
+    border: 0.5px solid var(--border);
+    background: var(--bg); cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 17px; transition: background .15s;
+    flex-shrink: 0;
+  }
+  .refresh-btn:hover { background: #e2e5ea; }
+  .refresh-btn:active { transform: scale(.95); }
+  .spin { animation: rot .8s linear infinite; display: inline-block; }
+  @keyframes rot { to { transform: rotate(360deg); } }
+
+  .btn-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .btn {
+    padding: 12px 6px; border-radius: var(--radius-sm);
+    border: 0.5px solid var(--border);
+    font-size: 11px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .4px;
+    cursor: pointer; transition: opacity .15s, transform .1s;
+    background: var(--card); color: var(--text);
+  }
+  .btn:active { transform: scale(.97); opacity: .85; }
+  .btn-on   { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
+  .btn-off  { background: var(--red-bg);   color: var(--red);   border-color: var(--red-bd); }
+  .btn-auto { background: var(--blue-bg);  color: var(--blue);  border-color: var(--blue-bd); grid-column: span 2; }
+
+  /* ── ALERTA ── */
+  .alert {
+    background: var(--amber-bg); border: 0.5px solid var(--amber-bd);
+    border-radius: var(--radius-sm); padding: 10px 12px;
+    font-size: 12px; font-weight: 600; color: var(--amber);
+    display: none;
+  }
+
+  /* ── CAIXAS ── */
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .caixa-card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .nivel-val { font-size: 22px; font-weight: 600; margin: 6px 0 4px; transition: color .4s; }
+  .bar-bg { background: #e9ecef; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+  .bar-fill { height: 100%; border-radius: 6px; width: 0%; transition: width 1s ease, background .5s; }
+  .divider { border: none; border-top: 0.5px solid var(--border); margin: 8px 0; }
+  .bat-val { font-size: 11px; font-weight: 600; margin-bottom: 3px; transition: color .4s; }
+  .bat-bg { background: #e9ecef; border-radius: 4px; height: 4px; overflow: hidden; }
+  .bat-fill { height: 100%; border-radius: 4px; width: 0%; transition: width 1s ease, background .5s; }
+  .hora { font-size: 10px; color: var(--muted); margin-top: 6px; }
+
+  /* ── GRÁFICO ── */
+  .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
+  .legend { display: flex; gap: 10px; }
+  .leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
+  .leg-line { width: 14px; height: 2px; border-radius: 2px; }
+
+  /* ── FOOTER ── */
+  .footer { text-align: center; font-size: 10px; color: var(--muted); padding: 4px 0 8px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+
+  <div id="alertBox" class="alert">⚠️ <span id="alertMsg"></span></div>
+
+  <!-- BOMBA -->
+  <div class="card">
+    <div class="bomba-row">
+      <div>
+        <div class="label">Bomba d'água</div>
+        <div class="bomba-val" id="bombaVal">--</div>
+        <div class="badges">
+          <span class="badge" id="bombaBadge">--</span>
+          <span class="badge" id="modoBadge">--</span>
+        </div>
+      </div>
+      <button class="refresh-btn" onclick="atualizar()" id="refreshBtn" aria-label="Atualizar dados">
+        <span id="refreshIcon">↻</span>
+      </button>
+    </div>
+    <div class="btn-grid">
+      <button class="btn btn-on"  onclick="enviarComando('BOMBA_ON')">▶ Ligar</button>
+      <button class="btn btn-off" onclick="enviarComando('BOMBA_OFF')">■ Desligar</button>
+      <button class="btn btn-auto" onclick="enviarComando('MODO_AUTO')">⚙ Modo automático</button>
+    </div>
+  </div>
+
+  <!-- CAIXAS -->
+  <div class="grid3">
+    <div class="caixa-card">
+      <div class="label">Caixa 1</div>
+      <div class="nivel-val" id="v1">--%</div>
+      <div class="bar-bg"><div class="bar-fill" id="b1"></div></div>
+      <hr class="divider">
+      <div class="label">Bateria</div>
+      <div class="bat-val" id="bat1">--%</div>
+      <div class="bat-bg"><div class="bat-fill" id="bb1"></div></div>
+      <div class="hora" id="h1">--:--</div>
+    </div>
+    <div class="caixa-card">
+      <div class="label">Caixa 2</div>
+      <div class="nivel-val" id="v2">--%</div>
+      <div class="bar-bg"><div class="bar-fill" id="b2"></div></div>
+      <hr class="divider">
+      <div class="label">Bateria</div>
+      <div class="bat-val" id="bat2">--%</div>
+      <div class="bat-bg"><div class="bat-fill" id="bb2"></div></div>
+      <div class="hora" id="h2">--:--</div>
+    </div>
+    <div class="caixa-card">
+      <div class="label">Caixa 3</div>
+      <div class="nivel-val" id="v3">--%</div>
+      <div class="bar-bg"><div class="bar-fill" id="b3"></div></div>
+      <hr class="divider">
+      <div class="label">Bateria</div>
+      <div class="bat-val" id="bat3">--%</div>
+      <div class="bat-bg"><div class="bat-fill" id="bb3"></div></div>
+      <div class="hora" id="h3">--:--</div>
+    </div>
+  </div>
+
+  <!-- GRÁFICO -->
+  <div class="card">
+    <div class="chart-header">
+      <div class="label" style="margin:0">Histórico de nível</div>
+      <div class="legend">
+        <div class="leg-item"><div class="leg-line" style="background:#378ADD"></div>C1</div>
+        <div class="leg-item"><div class="leg-line" style="background:#639922"></div>C2</div>
+        <div class="leg-item"><div class="leg-line" style="background:#BA7517"></div>C3</div>
+      </div>
+    </div>
+    <canvas id="grafico" height="130" style="width:100%;display:block"></canvas>
+  </div>
+
+  <div class="footer" id="msg">Sincronizando...</div>
+
+</div>
+
+<script>
+const TALKBACK_ID = '56515';
+const TALKBACK_KEY = 'Q26Z8ME89U9AQSHJ';
+const CHANNEL_ID  = '3282010';
+const HIST = [];
+const MAX_HIST = 20;
+
+function nivelCor(p) {
+  if (p < 30) return '#E24B4A';
+  if (p < 60) return '#BA7517';
+  return '#3B6D11';
+}
+function batCor(b) {
+  if (b < 20) return '#E24B4A';
+  if (b < 40) return '#BA7517';
+  return '#3B6D11';
+}
+
+function enviarComando(cmd) {
+  document.getElementById('msg').textContent = 'Enviando comando...';
+  const p = new URLSearchParams();
+  p.append('api_key', TALKBACK_KEY);
+  p.append('command_string', cmd);
+  fetch('https://api.thingspeak.com/talkbacks/' + TALKBACK_ID + '/commands.json', {
+    method: 'POST', body: p
+  })
+  .then(r => {
+    if (r.ok) {
+      document.getElementById('msg').textContent = 'Comando enviado. Aguardando...';
+      setTimeout(atualizar, 5000);
+    }
+  })
+  .catch(() => { document.getElementById('msg').textContent = 'Erro ao enviar.'; });
+}
+
+function setNivel(n, val) {
+  const cor = nivelCor(val);
+  document.getElementById('v' + n).textContent = val + '%';
+  document.getElementById('v' + n).style.color = cor;
+  document.getElementById('b' + n).style.width = val + '%';
+  document.getElementById('b' + n).style.background = cor;
+}
+
+function setBat(n, val) {
+  const cor = batCor(val);
+  document.getElementById('bat' + n).textContent = val + '%';
+  document.getElementById('bat' + n).style.color = cor;
+  document.getElementById('bb' + n).style.width = val + '%';
+  document.getElementById('bb' + n).style.background = cor;
+}
+
+function drawChart() {
+  const canvas = document.getElementById('grafico');
+  const W = canvas.offsetWidth || 380;
+  canvas.width = W; canvas.height = 130;
+  const ctx = canvas.getContext('2d');
+  const pad = { t: 8, r: 8, b: 20, l: 28 };
+  const cW = W - pad.l - pad.r;
+  const cH = 130 - pad.t - pad.b;
+
+  ctx.clearRect(0, 0, W, 130);
+
+  if (HIST.length < 2) {
+    ctx.fillStyle = '#9ca3af';
+    ctx.font = '11px sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('Aguardando dados...', W / 2, 65);
+    return;
+  }
+
+  [0, 25, 50, 75, 100].forEach(v => {
+    const y = pad.t + cH - (v / 100) * cH;
+    ctx.strokeStyle = '#e5e7eb'; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(pad.l, y); ctx.lineTo(W - pad.r, y); ctx.stroke();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '9px sans-serif'; ctx.textAlign = 'right';
+    ctx.fillText(v + '%', pad.l - 3, y + 3);
+  });
+
+  const n = HIST.length;
+  const cols = ['#378ADD', '#639922', '#BA7517'];
+  ['p1', 'p2', 'p3'].forEach((k, ki) => {
+    ctx.beginPath();
+    ctx.strokeStyle = cols[ki];
+    ctx.lineWidth = 1.8;
+    HIST.forEach((pt, i) => {
+      const x = pad.l + (i / (n - 1)) * cW;
+      const y = pad.t + cH - (Math.max(0, pt[k]) / 100) * cH;
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+  });
+}
+
+function atualizar() {
+  const msgEl = document.getElementById('msg');
+  const icon  = document.getElementById('refreshIcon');
+  icon.classList.add('spin');
+  msgEl.textContent = 'Buscando dados...';
+
+  const url = 'https://api.thingspeak.com/channels/' + CHANNEL_ID +
+              '/feeds.json?results=2&_=' + Date.now();
+
+  fetch(url, { cache: 'no-store' })
+  .then(r => r.json())
+  .then(data => {
+    icon.classList.remove('spin');
+    if (!data.feeds || !data.feeds.length) return;
+
+    const feeds = data.feeds.slice().reverse();
+    const temSensor = f => f.field1 !== null && f.field1 !== '';
+    const temBomba  = f => f.field4 !== null && f.field4 !== '';
+    const fs = feeds.find(f => temSensor(f));
+    const fb = feeds.find(f => temBomba(f));
+
+    if (fs) {
+      const pt = {};
+      for (let i = 1; i <= 3; i++) {
+        const nivel = parseInt(fs['field' + i]) || 0;
+        const bat   = parseInt(fs['field' + (i + 5)]) || 0;
+        setNivel(i, nivel);
+        setBat(i, bat);
+        const hora = new Date(fs.created_at)
+          .toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
+        document.getElementById('h' + i).textContent = hora;
+        pt['p' + i] = nivel;
+      }
+      HIST.push(pt);
+      if (HIST.length > MAX_HIST) HIST.shift();
+      drawChart();
+    }
+
+    if (fb) {
+      const ligada = fb.field4 === '1';
+      const manual = fb.field5 === '1';
+
+      document.getElementById('bombaVal').textContent = ligada ? 'Ligada' : 'Desligada';
+      document.getElementById('bombaVal').style.color  = ligada ? '#3B6D11' : '#A32D2D';
+
+      const bb = document.getElementById('bombaBadge');
+      bb.textContent  = ligada ? 'On' : 'Off';
+      bb.className    = 'badge ' + (ligada ? 'badge-on' : 'badge-off');
+
+      const mb = document.getElementById('modoBadge');
+      mb.textContent = manual ? 'Manual' : 'Auto';
+      mb.className   = 'badge ' + (manual ? 'badge-manual' : 'badge-auto');
+
+      const al = document.getElementById('alertBox');
+      if (manual) {
+        al.style.display = 'block';
+        document.getElementById('alertMsg').textContent =
+          'Modo manual ativo — a bomba está sendo controlada manualmente.';
+      } else {
+        al.style.display = 'none';
+      }
+    }
+
+    msgEl.textContent = 'Atualizado: ' + new Date().toLocaleTimeString('pt-BR');
+  })
+  .catch(() => {
+    icon.classList.remove('spin');
+    msgEl.textContent = 'Erro de conexão.';
+  });
+}
+
+atualizar();
+setInterval(atualizar, 30000);
+window.addEventListener('resize', drawChart);
+</script>
+</body>
+</html>
