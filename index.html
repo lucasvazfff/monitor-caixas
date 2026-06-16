@@ -26,7 +26,7 @@
     --blue-bg:  #e6f1fb;
     --blue-bd:  #85B7EB;
     --radius:   14px;
-    --radius-sm:8px;
+    --radius-sm: 8px;
   }
 
   body {
@@ -36,6 +36,79 @@
     padding: 14px;
     color: var(--text);
   }
+
+  /* ── TELA DE PIN ── */
+  #pinScreen {
+    position: fixed; inset: 0;
+    background: var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+
+  .pin-card {
+    background: var(--card);
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius);
+    padding: 28px 24px;
+    width: 100%; max-width: 300px;
+    text-align: center;
+  }
+
+  .pin-title {
+    font-size: 15px; font-weight: 600;
+    margin-bottom: 4px;
+  }
+
+  .pin-sub {
+    font-size: 11px; color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .pin-dots {
+    display: flex; justify-content: center; gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .pin-dot {
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    border: 1.5px solid #d1d5db;
+    background: transparent;
+    transition: background .2s, border-color .2s;
+  }
+
+  .pin-dot.filled { background: var(--text); border-color: var(--text); }
+  .pin-dot.error  { background: var(--red);  border-color: var(--red); }
+
+  .pin-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+
+  .pin-btn {
+    padding: 16px 8px;
+    border: 0.5px solid var(--border);
+    border-radius: var(--radius-sm);
+    background: var(--card);
+    font-size: 18px; font-weight: 500;
+    cursor: pointer;
+    transition: background .1s, transform .1s;
+    color: var(--text);
+  }
+
+  .pin-btn:hover   { background: var(--bg); }
+  .pin-btn:active  { transform: scale(.95); background: #e2e5ea; }
+  .pin-btn.del     { font-size: 14px; color: var(--muted); }
+
+  .pin-error {
+    font-size: 11px; color: var(--red);
+    margin-top: 12px; min-height: 16px;
+    font-weight: 600;
+  }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display: none; }
 
   .wrap { max-width: 440px; margin: auto; display: flex; flex-direction: column; gap: 12px; }
 
@@ -47,37 +120,35 @@
   }
 
   .label {
-    font-size: 10px;
-    font-weight: 600;
-    text-transform: uppercase;
-    letter-spacing: .7px;
-    color: var(--muted);
-    margin-bottom: 4px;
+    font-size: 10px; font-weight: 600;
+    text-transform: uppercase; letter-spacing: .7px;
+    color: var(--muted); margin-bottom: 4px;
   }
 
-  /* ── BOMBA ── */
   .bomba-row { display: flex; align-items: center; justify-content: space-between; margin-bottom: 14px; }
   .bomba-val { font-size: 20px; font-weight: 600; }
   .badges { display: flex; gap: 6px; margin-top: 4px; flex-wrap: wrap; }
   .badge {
-    font-size: 10px; font-weight: 600; padding: 2px 8px;
-    border-radius: 20px; border: 0.5px solid transparent;
+    font-size: 10px; font-weight: 600;
+    padding: 2px 8px; border-radius: 20px;
+    border: 0.5px solid transparent;
   }
   .badge-on     { background: var(--green-bg); color: var(--green); border-color: var(--green-bd); }
   .badge-off    { background: var(--red-bg);   color: var(--red);   border-color: var(--red-bd); }
   .badge-auto   { background: var(--blue-bg);  color: var(--blue);  border-color: var(--blue-bd); }
   .badge-manual { background: var(--amber-bg); color: var(--amber); border-color: var(--amber-bd); }
 
-  .refresh-btn {
+  .top-row { display: flex; align-items: center; gap: 8px; }
+  .icon-btn {
     width: 36px; height: 36px; border-radius: 50%;
     border: 0.5px solid var(--border);
     background: var(--bg); cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    font-size: 17px; transition: background .15s;
-    flex-shrink: 0;
+    font-size: 15px; transition: background .15s; flex-shrink: 0;
   }
-  .refresh-btn:hover { background: #e2e5ea; }
-  .refresh-btn:active { transform: scale(.95); }
+  .icon-btn:hover  { background: #e2e5ea; }
+  .icon-btn:active { transform: scale(.95); }
+
   .spin { animation: rot .8s linear infinite; display: inline-block; }
   @keyframes rot { to { transform: rotate(360deg); } }
 
@@ -95,7 +166,6 @@
   .btn-off  { background: var(--red-bg);   color: var(--red);   border-color: var(--red-bd); }
   .btn-auto { background: var(--blue-bg);  color: var(--blue);  border-color: var(--blue-bd); grid-column: span 2; }
 
-  /* ── ALERTA ── */
   .alert {
     background: var(--amber-bg); border: 0.5px solid var(--amber-bd);
     border-radius: var(--radius-sm); padding: 10px 12px;
@@ -103,30 +173,64 @@
     display: none;
   }
 
-  /* ── CAIXAS ── */
   .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-  .caixa-card { background: var(--card); border: 0.5px solid var(--border); border-radius: var(--radius); padding: 14px; }
+  .caixa-card {
+    background: var(--card); border: 0.5px solid var(--border);
+    border-radius: var(--radius); padding: 14px;
+  }
   .nivel-val { font-size: 22px; font-weight: 600; margin: 6px 0 4px; transition: color .4s; }
-  .bar-bg { background: #e9ecef; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 8px; }
+  .bar-bg  { background: #e9ecef; border-radius: 6px; height: 8px; overflow: hidden; margin-bottom: 8px; }
   .bar-fill { height: 100%; border-radius: 6px; width: 0%; transition: width 1s ease, background .5s; }
   .divider { border: none; border-top: 0.5px solid var(--border); margin: 8px 0; }
   .bat-val { font-size: 11px; font-weight: 600; margin-bottom: 3px; transition: color .4s; }
-  .bat-bg { background: #e9ecef; border-radius: 4px; height: 4px; overflow: hidden; }
+  .bat-bg  { background: #e9ecef; border-radius: 4px; height: 4px; overflow: hidden; }
   .bat-fill { height: 100%; border-radius: 4px; width: 0%; transition: width 1s ease, background .5s; }
   .hora { font-size: 10px; color: var(--muted); margin-top: 6px; }
 
-  /* ── GRÁFICO ── */
   .chart-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 10px; }
   .legend { display: flex; gap: 10px; }
   .leg-item { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--muted); }
   .leg-line { width: 14px; height: 2px; border-radius: 2px; }
 
-  /* ── FOOTER ── */
   .footer { text-align: center; font-size: 10px; color: var(--muted); padding: 4px 0 8px; }
 </style>
 </head>
 <body>
 
+<!-- ══ TELA DE PIN ══════════════════════════════════════ -->
+<div id="pinScreen">
+  <div class="pin-card">
+    <div class="pin-title">Monitor de Caixas</div>
+    <div class="pin-sub">Digite o PIN para acessar</div>
+
+    <div class="pin-dots">
+      <div class="pin-dot" id="d0"></div>
+      <div class="pin-dot" id="d1"></div>
+      <div class="pin-dot" id="d2"></div>
+      <div class="pin-dot" id="d3"></div>
+    </div>
+
+    <div class="pin-grid">
+      <button class="pin-btn" onclick="pinDigit('1')">1</button>
+      <button class="pin-btn" onclick="pinDigit('2')">2</button>
+      <button class="pin-btn" onclick="pinDigit('3')">3</button>
+      <button class="pin-btn" onclick="pinDigit('4')">4</button>
+      <button class="pin-btn" onclick="pinDigit('5')">5</button>
+      <button class="pin-btn" onclick="pinDigit('6')">6</button>
+      <button class="pin-btn" onclick="pinDigit('7')">7</button>
+      <button class="pin-btn" onclick="pinDigit('8')">8</button>
+      <button class="pin-btn" onclick="pinDigit('9')">9</button>
+      <button class="pin-btn del" onclick="pinClear()">Limpar</button>
+      <button class="pin-btn" onclick="pinDigit('0')">0</button>
+      <button class="pin-btn del" onclick="pinBack()">⌫</button>
+    </div>
+
+    <div class="pin-error" id="pinError"></div>
+  </div>
+</div>
+
+<!-- ══ DASHBOARD ════════════════════════════════════════ -->
+<div id="dashboard">
 <div class="wrap">
 
   <div id="alertBox" class="alert">⚠️ <span id="alertMsg"></span></div>
@@ -142,9 +246,12 @@
           <span class="badge" id="modoBadge">--</span>
         </div>
       </div>
-      <button class="refresh-btn" onclick="atualizar()" id="refreshBtn" aria-label="Atualizar dados">
-        <span id="refreshIcon">↻</span>
-      </button>
+      <div style="display:flex;gap:8px">
+        <button class="icon-btn" onclick="atualizar()" id="refreshBtn" aria-label="Atualizar">
+          <span id="refreshIcon">↻</span>
+        </button>
+        <button class="icon-btn" onclick="sair()" aria-label="Sair" title="Sair">🔒</button>
+      </div>
     </div>
     <div class="btn-grid">
       <button class="btn btn-on"  onclick="enviarComando('BOMBA_ON')">▶ Ligar</button>
@@ -201,10 +308,83 @@
   </div>
 
   <div class="footer" id="msg">Sincronizando...</div>
-
+</div>
 </div>
 
 <script>
+// ── PIN ──────────────────────────────────────────────────
+// ALTERE AQUI O SEU PIN (mínimo 4 dígitos)
+const PIN_CORRETO = '8981';
+
+let pinAtual = '';
+
+function pinDigit(d) {
+  if (pinAtual.length >= PIN_CORRETO.length) return;
+  pinAtual += d;
+  atualizarDots(false);
+  if (pinAtual.length === PIN_CORRETO.length) {
+    setTimeout(verificarPin, 150);
+  }
+}
+
+function pinBack() {
+  pinAtual = pinAtual.slice(0, -1);
+  atualizarDots(false);
+  document.getElementById('pinError').textContent = '';
+}
+
+function pinClear() {
+  pinAtual = '';
+  atualizarDots(false);
+  document.getElementById('pinError').textContent = '';
+}
+
+function atualizarDots(erro) {
+  for (let i = 0; i < PIN_CORRETO.length; i++) {
+    const dot = document.getElementById('d' + i);
+    dot.className = 'pin-dot';
+    if (erro) dot.classList.add('error');
+    else if (i < pinAtual.length) dot.classList.add('filled');
+  }
+}
+
+function verificarPin() {
+  if (pinAtual === PIN_CORRETO) {
+    sessionStorage.setItem('auth', '1');
+    document.getElementById('pinScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    atualizar();
+  } else {
+    atualizarDots(true);
+    document.getElementById('pinError').textContent = 'PIN incorreto. Tente novamente.';
+    setTimeout(() => { pinAtual = ''; atualizarDots(false); }, 800);
+  }
+}
+
+function sair() {
+  sessionStorage.removeItem('auth');
+  pinAtual = '';
+  atualizarDots(false);
+  document.getElementById('pinError').textContent = '';
+  document.getElementById('dashboard').style.display = 'none';
+  document.getElementById('pinScreen').style.display = 'flex';
+}
+
+// Verifica se já estava autenticado nesta sessão
+if (sessionStorage.getItem('auth') === '1') {
+  document.getElementById('pinScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+}
+
+// Suporte a teclado numérico
+document.addEventListener('keydown', e => {
+  if (document.getElementById('pinScreen').style.display === 'none') return;
+  if (e.key >= '0' && e.key <= '9') pinDigit(e.key);
+  if (e.key === 'Backspace') pinBack();
+  if (e.key === 'Escape') pinClear();
+});
+
+// ── THINGSPEAK ───────────────────────────────────────────
 const TALKBACK_ID = '56515';
 const TALKBACK_KEY = 'Q26Z8ME89U9AQSHJ';
 const CHANNEL_ID  = '3282010';
@@ -303,10 +483,8 @@ function atualizar() {
   icon.classList.add('spin');
   msgEl.textContent = 'Buscando dados...';
 
-  const url = 'https://api.thingspeak.com/channels/' + CHANNEL_ID +
-              '/feeds.json?results=2&_=' + Date.now();
-
-  fetch(url, { cache: 'no-store' })
+  fetch('https://api.thingspeak.com/channels/' + CHANNEL_ID +
+        '/feeds.json?results=2&_=' + Date.now(), { cache: 'no-store' })
   .then(r => r.json())
   .then(data => {
     icon.classList.remove('spin');
@@ -343,8 +521,8 @@ function atualizar() {
       document.getElementById('bombaVal').style.color  = ligada ? '#3B6D11' : '#A32D2D';
 
       const bb = document.getElementById('bombaBadge');
-      bb.textContent  = ligada ? 'On' : 'Off';
-      bb.className    = 'badge ' + (ligada ? 'badge-on' : 'badge-off');
+      bb.textContent = ligada ? 'On' : 'Off';
+      bb.className   = 'badge ' + (ligada ? 'badge-on' : 'badge-off');
 
       const mb = document.getElementById('modoBadge');
       mb.textContent = manual ? 'Manual' : 'Auto';
@@ -368,7 +546,6 @@ function atualizar() {
   });
 }
 
-atualizar();
 setInterval(atualizar, 30000);
 window.addEventListener('resize', drawChart);
 </script>
